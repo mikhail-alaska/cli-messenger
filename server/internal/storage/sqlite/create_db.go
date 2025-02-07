@@ -19,6 +19,7 @@ func New(storagePath string) (*Storage, error) {
 		`CREATE TABLE IF NOT EXISTS users(
             id INTEGER PRIMARY KEY,
             username TEXT NOT NULL UNIQUE,
+            password TEXT NOT NULL,
             openkey INTEGER NOT NULL);
        `)
 
@@ -37,7 +38,7 @@ func New(storagePath string) (*Storage, error) {
             id INTEGER PRIMARY KEY,
             username1 TEXT NOT NULL,
             username2 TEXT NOT NULL,
-            messagefor1 TEXT
+            messagefor1 TEXT,
             messagefor2 TEXT);
        `)
 

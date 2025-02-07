@@ -1,37 +1,36 @@
-package users
+package messages
 
 import (
-	"errors"
 	"log/slog"
 	"net/http"
 
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/render"
 	"github.com/go-playground/validator/v10"
+	"github.com/mikhail-alaska/cli-messenger/server/internal/http-server/middleware/auth"
 	resp "github.com/mikhail-alaska/cli-messenger/server/internal/lib/api/response"
 	"github.com/mikhail-alaska/cli-messenger/server/internal/lib/logger/sl"
-	"github.com/mikhail-alaska/cli-messenger/server/internal/storage"
 )
 
 type Request struct {
-	Username string `json:"username" validate:"required"`
-	OpenKey  int    `json:"openkey" validate:"required"`
-	Password  string    `json:"password" validate:"required"`
+	Username    string `json:"username" validate:"required"`
+	MessageFor1 string `json:"messagefor1" validate:"required"`
+	MessageFor2 string `json:"messagefor2" validate:"required"`
 }
 
 type Response struct {
 	resp.Response
 }
 
-type UserCreater interface {
-	CreateUser(userName string, openKey int, password string) (int64, error)
+type MessageCreater interface {
+	CreateMessage(userName1, userName2, msg1, msg2 string) (int64, error)
 }
 
-
-func NewUser(log *slog.Logger, userCreater UserCreater) http.HandlerFunc {
+func NewMessage(log *slog.Logger, messageCreater MessageCreater) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		const op = "handlers.users.create"
+		const op = "handlers.messages.create"
 
+        username := auth.GetUsername(w, r)
 		log = log.With(
 			slog.String("op", op),
 			slog.String("request_id", middleware.GetReqID(r.Context())),
@@ -56,22 +55,16 @@ func NewUser(log *slog.Logger, userCreater UserCreater) http.HandlerFunc {
 			return
 		}
 
-		id, err := userCreater.CreateUser(req.Username,req.OpenKey, req.Password)
-		if errors.Is(err, storage.ErrUserNameExists) {
-            log.Info("username already exists", slog.String("username", req.Username))
-			render.JSON(w, r, resp.Error("username already exists"))
-			return
-		}
+		id, err := messageCreater.CreateMessage(username, req.Username, req.MessageFor1, req.MessageFor2)
 		if err != nil {
-			log.Error("failed to save user", sl.Err(err))
-			render.JSON(w, r, resp.Error("failed to save user"))
+			log.Error("failed to create message", sl.Err(err))
+			render.JSON(w, r, resp.Error("failed to create message"))
 			return
 		}
 
-
-		log.Info("user added", slog.Any("id", id))
-        render.JSON(w,r, Response{
-            Response: resp.OK(),
-        })
+		log.Info("message sent", slog.Any("id", id))
+		render.JSON(w, r, Response{
+			Response: resp.OK(),
+		})
 	}
 }

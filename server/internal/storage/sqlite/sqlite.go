@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"slices"
 	"sort"
 
 	"github.com/mattn/go-sqlite3"
@@ -14,15 +15,15 @@ type Storage struct {
 	db *sql.DB
 }
 
-func (s *Storage) CreateUser(userName string, openKey int) (int64, error) {
+func (s *Storage) CreateUser(userName string, openKey int, password string) (int64, error) {
 	const op = "storage.sqlite.CreateUser"
 
-	stmt, err := s.db.Prepare("INSERT INTO users(username, openkey) VALUES(?, ?)")
+	stmt, err := s.db.Prepare("INSERT INTO users(username, openkey, password) VALUES(?, ?, ?)")
 	if err != nil {
 		return 0, fmt.Errorf("%s, %w", op, err)
 	}
 
-	res, err := stmt.Exec(userName, openKey)
+	res, err := stmt.Exec(userName, openKey, password)
 	if err != nil {
 		if sqliteErr, ok := err.(sqlite3.Error); ok && sqliteErr.ExtendedCode == sqlite3.ErrConstraintUnique {
 			return 0, fmt.Errorf("%s, %w", op, storage.ErrUserNameExists)
@@ -48,7 +49,7 @@ func (s *Storage) GetAllUsers() ([]string, error) {
 	}
 
 	rows, err := stmt.Query()
-    var temp string
+	var temp string
 	if err != nil {
 		return res, fmt.Errorf("%s, while executing statement %w", op, err)
 	}
@@ -80,10 +81,30 @@ func (s *Storage) GetOpenKey(username string) (int, error) {
 	return res, nil
 }
 
+func (s *Storage) GetPassword(username string) (string, error) {
+	const op = "storage.sqlite.GetPassword"
+
+	var res string
+	stmt, err := s.db.Prepare("SELECT openkey FROM users WHERE username=?")
+	if err != nil {
+		return res, fmt.Errorf("%s, %w", op, err)
+	}
+
+	err = stmt.QueryRow(username).Scan(&res)
+	if errors.Is(err, sql.ErrNoRows) {
+		return res, storage.ErrUserNameNotFound
+	}
+	if err != nil {
+		return res, fmt.Errorf("%s, while executing statement %w", op, err)
+	}
+
+	return res, nil
+}
+
 func (s *Storage) CreateMessage(userName1, userName2, msg1, msg2 string) (int64, error) {
 	const op = "storage.sqlite.CreateMessage"
 
-	stmt, err := s.db.Prepare("INSERT INTO messages(username1, username2, messagefor1,messagefor2) VALUES(?, ?, ?, ?)")
+	stmt, err := s.db.Prepare("INSERT INTO messages(username1, username2, messagefor1, messagefor2) VALUES(?, ?, ?, ?)")
 	if err != nil {
 		return 0, fmt.Errorf("%s, %w", op, err)
 	}
@@ -117,7 +138,9 @@ func (s *Storage) GetChatsByUsername(username string) ([]string, error) {
 	}
 	for rows.Next() {
 		rows.Scan(&res)
-		usernames = append(usernames, res)
+		if !slices.Contains(usernames, res) {
+			usernames = append(usernames, res)
+		}
 	}
 
 	stmt, err = s.db.Prepare("SELECT username1 FROM messages WHERE username2=?")
@@ -131,7 +154,9 @@ func (s *Storage) GetChatsByUsername(username string) ([]string, error) {
 	}
 	for rows.Next() {
 		rows.Scan(&res)
-		usernames = append(usernames, res)
+		if !slices.Contains(usernames, res) {
+			usernames = append(usernames, res)
+		}
 	}
 	return usernames, nil
 }
@@ -170,4 +195,3 @@ func (s *Storage) GetMessages(username1, username2 string) ([]storage.StorageMes
 
 	return messages, nil
 }
-
