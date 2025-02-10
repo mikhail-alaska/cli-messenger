@@ -64,7 +64,7 @@ func GetMessages(log *slog.Logger, messageGetter MessageGetter) http.HandlerFunc
 			return
 		}
 
-		log.Info("message sent", slog.Any("id", id))
+		log.Info("message gotten", slog.Any("id", id))
         var msgs []string
         for _, j := range id{
             msgs= append(msgs, j.Message)

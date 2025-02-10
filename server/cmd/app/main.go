@@ -51,12 +51,12 @@ func main() {
 
 	router.Post("/login", login.LoginHandler(log, storage))
 
+	router.Get("/users", users.AllUsers(log, storage))
 	router.Group(func(r chi.Router) {
 		r.Use(auth.JWTAuth)
-		r.Get("/users", users.AllUsers(log, storage))
 		r.Get("/users/openkey", users.OpenKeyByUserName(log, storage))
 		r.Get("/chats", messages.GetChats(log, storage))
-        r.Post("/message", messages.NewMessage(log, storage))
+		r.Post("/message", messages.NewMessage(log, storage))
 		r.Get("/message", messages.GetMessages(log, storage))
 	})
 	// TODO run server
