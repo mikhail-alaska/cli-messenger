@@ -2,12 +2,18 @@ package main
 
 import (
 	"fmt"
-	tea "github.com/charmbracelet/bubbletea"
 	"os"
+
+	tea "github.com/charmbracelet/bubbletea"
+	"github.com/mikhail-alaska/cli-messenger/client/config"
 )
 
-func main() {
+var cfg = config.MustLoad()
 
+var globalToken = ""
+
+func main() {
+    globalToken
 	m := NewModel()
 	p := tea.NewProgram(m, tea.WithAltScreen())
 
