@@ -62,6 +62,7 @@ func (m model) View() string {
 	switch m.state {
 	case newMessageView:
 		selected := m.currChat
+        m.textinput.Placeholder = "Start typing"
 		rawUser := selected.(item)
 		user := getuserfromitem(rawUser)
 		title := fmt.Sprintf("New message to %s", user)
@@ -71,9 +72,7 @@ func (m model) View() string {
 			Render(title)
 		inputView := m.textinput.View()
 		content := fmt.Sprintf("%s\n\n%s", titleStyled, inputView)
-		// Рендерим окно с рамкой и отступами
 		messageWindow := newMessageStyle.Render(content)
-		// Центрируем окно на весь размер терминала
 		return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, messageWindow)
 
 	case chatView:

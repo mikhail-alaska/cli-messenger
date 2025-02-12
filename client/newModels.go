@@ -30,6 +30,7 @@ func NewModel() model {
 
 	ta := textarea.New()
 	ti := textinput.New()
+
 	for _, i := range resp.Chats {
 		items = append(items, item{title: i})
 	}
