@@ -12,6 +12,7 @@ import (
 )
 
 func NewModel() model {
+
 	token := GetToken()
 	rawChats, err := getChats(token)
 	items := []list.Item{}
@@ -37,8 +38,12 @@ func NewModel() model {
 	if len(items) == 0 {
 		items = append(items, item{title: "напиши кому нибудь"})
 	}
+
 	m := model{list: list.New(items, list.NewDefaultDelegate(), 0, 0), textarea: ta, textinput: ti}
 	m.list.Title = "Список чатов"
+	_ =m.list.AdditionalFullHelpKeys
+    m.list.SetShowHelp(false) 
+    m.list.SetStatusBarItemName("chat", "chats")
 	return m
 }
 
@@ -69,6 +74,7 @@ func ListModel(m *model) []tea.Cmd {
 	cmd = m.list.SetItems(newItems)
 	cmds = append(cmds, cmd)
 	m.list.Title = "Список чатов"
+    m.list.SetStatusBarItemName("chat", "chats")
 	return cmds
 }
 
@@ -108,6 +114,7 @@ func ChatModel(m *model, selected list.Item) []tea.Cmd {
 		m.list.CursorDown()
 	}
 	m.list.Title = "Список сообщений"
+    m.list.SetStatusBarItemName("message", "messages")
 	return nil
 }
 
@@ -135,5 +142,6 @@ func FindModel(m *model) []tea.Cmd {
 
 	m.list.SetItems(newItems)
 	m.list.Title = "Список пользователей"
+    m.list.SetStatusBarItemName("chat", "chats")
 	return nil
 }

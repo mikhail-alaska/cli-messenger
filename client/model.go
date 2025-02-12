@@ -72,7 +72,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.currChat = m.list.SelectedItem()
 				cmds = append(cmds, ChatModel(&m, m.currChat)...)
 
-			case "f", "l", "h", tea.KeyTab.String():
+			case "f", tea.KeyTab.String():
 				m.state = findView
 				cmds = append(cmds, FindModel(&m)...)
 			}
@@ -86,7 +86,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.textinput.Focus()
 				m.textinput.SetValue("")
 
-			case tea.KeyTab.String(), "f", "l", "h":
+			case tea.KeyTab.String(), "f":
 				m.state = listView
 				cmds = append(cmds, ListModel(&m)...)
 			}
@@ -98,11 +98,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 			case "u":
 				cmds = append(cmds, ChatModel(&m, m.currChat)...)
-			case "i":
+			case "i", "enter":
 				m.state = newMessageView
 				m.textinput.Focus()
 				m.textinput.SetValue("")
-			case tea.KeyTab.String():
+			case tea.KeyTab.String(), "f":
 				m.state = listView
 				cmds = append(cmds, ListModel(&m)...)
 
@@ -127,7 +127,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.width = msg.Width
 		m.height = msg.Height
 		h, v := docStyle.GetFrameSize()
-		m.list.SetSize(msg.Width-h, msg.Height-v)
+		m.list.SetSize(msg.Width-h, msg.Height-v-5)
 	}
 	if m.state != newMessageView {
 		m.list, cmd = m.list.Update(msg)
