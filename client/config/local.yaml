@@ -1,4 +1,7 @@
+login: "chich"
+password: "11"
+openkey: 11
+closedkey: 13
 http_server:
   address: "localhost:8081"
-  login: "chich"
-  password: "11"
+  

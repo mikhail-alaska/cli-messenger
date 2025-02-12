@@ -48,13 +48,14 @@ func main() {
 	router.Use(middleware.URLFormat)
 
 	router.Post("/user", users.NewUser(log, storage))
+    router.Get("/user", users.OpenKeyByUserName(log, storage))
 
 	router.Post("/login", login.LoginHandler(log, storage))
 
 	router.Get("/users", users.AllUsers(log, storage))
+
 	router.Group(func(r chi.Router) {
 		r.Use(auth.JWTAuth)
-		r.Get("/users/openkey", users.OpenKeyByUserName(log, storage))
 		r.Get("/chats", messages.GetChats(log, storage))
 		r.Post("/message", messages.NewMessage(log, storage))
 		r.Get("/message", messages.GetMessages(log, storage))

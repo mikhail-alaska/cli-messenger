@@ -35,6 +35,9 @@ type model struct {
 	senderStyle lipgloss.Style
 	err         error
 	currChat    list.Item
+
+	width  int
+	height int
 }
 
 func (m model) Init() tea.Cmd {
@@ -121,6 +124,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		}
 	case tea.WindowSizeMsg:
+		m.width = msg.Width
+		m.height = msg.Height
 		h, v := docStyle.GetFrameSize()
 		m.list.SetSize(msg.Width-h, msg.Height-v)
 	}

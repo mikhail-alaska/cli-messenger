@@ -12,8 +12,13 @@ var cfg = config.MustLoad()
 
 var globalToken = ""
 
+
 func main() {
-    globalToken
+	globalToken = CheckRegister()
+    if !cfg.Check(){
+		fmt.Println("error while parsing your data")
+		os.Exit(1)
+    }
 	m := NewModel()
 	p := tea.NewProgram(m, tea.WithAltScreen())
 
